@@ -3,25 +3,19 @@ import logging
 import os
 import threading
 from flask import Flask
-from aiogram import Bot, Dispatcher, types, F
-from aiogram.filters import CommandStart, Command, BaseFilter
-from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand, BotCommandScopeDefault
-from database import db
+from aiogram import Bot, Dispatcher
 
-# 1. O'zgaruvchilar va sozlamalar
+# 1. Muhit o'zgaruvchilari
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "8934015919:AAEYR7gykqYE9oWoHr4_awFLhpf6_0-Ov9o")
 SUPER_ADMIN_ID = 5682605205                         
-CHANNEL_ID = -1004495936628                         
+CHANNEL_ID = -1004495936628                        
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
-# 2. Flask server sozlamalari (Render uchun)
+# 2. Flask server
 web_app = Flask(__name__)
 
-# Flask loglari konsolda shovqin qilmasligi uchun
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
@@ -34,20 +28,23 @@ def run_flask():
     web_app.run(host="0.0.0.0", port=port)
 
 def keep_alive():
-    t = threading.Thread(target=run_flask)
-    t.daemon = True
+    t = threading.Thread(target=run_flask, daemon=True)
     t.start()
 
-# 3. Asosiy ishga tushirish funksiyasi
+# Flask'ni dastur boshlanishi bilanoq fonda yurgizamiz
+keep_alive()
+
+# 3. Asosiy Bot logikasi
 async def main():
-    # Flask serverini fonda yoqamiz
-    keep_alive()
-    
-    # Logging sozlamasi
     logging.basicConfig(level=logging.INFO)
     
-    # ... Bu yerda qolgan barcha handler va routerlar ulangan bo'lishi kerak ...
+    # MUHIM: Bu yerda barcha handler/routerlaringiz ulangan bo'lishi kerak!
+    # Masalan: dp.include_router(start_router)
     
+    # Eskidan qolib ketgan webhooklarni tozalaymiz
+    await bot.delete_webhook(drop_pending_updates=True)
+    
+    logging.info("Bot polling rejimi ishga tushmoqda...")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
