@@ -9,23 +9,49 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand, BotCommandScopeDefault
 from database import db
+
+# 1. O'zgaruvchilar va sozlamalar
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "8934015919:AAEYR7gykqYE9oWoHr4_awFLhpf6_0-Ov9o")
+SUPER_ADMIN_ID = 5682605205                         
+CHANNEL_ID = -1004495936628                         
+
+bot = Bot(token=BOT_TOKEN)
+dp = Dispatcher()
+
+# 2. Flask server sozlamalari (Render uchun)
 web_app = Flask(__name__)
+
+# Flask loglari konsolda shovqin qilmasligi uchun
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 @web_app.route('/')
 def home():
     return "Bot muvaffaqiyatli ishlamoqda!"
 
 def run_flask():
-    # Server tomonidan beriladigan portni oladi (sukut bo'yicha 8080)
     port = int(os.environ.get("PORT", 8080))
     web_app.run(host="0.0.0.0", port=port)
 
-BOT_TOKEN = "8934015919:AAEYR7gykqYE9oWoHr4_awFLhpf6_0-Ov9o" 
-SUPER_ADMIN_ID = 5682605205                         
-CHANNEL_ID = -1004495936628                        
+def keep_alive():
+    t = threading.Thread(target=run_flask)
+    t.daemon = True
+    t.start()
 
-bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher()
+# 3. Asosiy ishga tushirish funksiyasi
+async def main():
+    # Flask serverini fonda yoqamiz
+    keep_alive()
+    
+    # Logging sozlamasi
+    logging.basicConfig(level=logging.INFO)
+    
+    # ... Bu yerda qolgan barcha handler va routerlar ulangan bo'lishi kerak ...
+    
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    asyncio.run(main())
 
 ADMIN_NAV_BUTTONS = ["📚 Katalog", "📥 Kitob qo'shish", "⚙️ Boshqaruv", "📊 Statistika", "🔍 Qidirish"]
 USER_NAV_BUTTONS = ["📚 Katalog", "🔍 Qidirish"]
