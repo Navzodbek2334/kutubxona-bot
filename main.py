@@ -6,7 +6,7 @@ from flask import Flask
 from aiogram import Bot, Dispatcher
 
 # 1. Bot va admin sozlamalari
-BOT_TOKEN = "8934015919:AAEYR7gykqYE9oWoHr4_awFLhpf6_0-Ov9o"
+BOT_TOKEN = "8934015919:AAHNz8B4LoDT5QPlcCD4AvZZFpBootHkJuk"
 SUPER_ADMIN_ID = 5682605205                         
 CHANNEL_ID = -1004495936628                         
 
